@@ -1,11 +1,9 @@
 package br.com.forum_hub.domain.curso;
 
 import br.com.forum_hub.infra.exception.RegraDeNegocioException;
-import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @Service
 public class CursoService {

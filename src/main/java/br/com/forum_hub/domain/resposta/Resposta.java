@@ -1,8 +1,6 @@
 package br.com.forum_hub.domain.resposta;
 
-import br.com.forum_hub.domain.topico.Status;
 import br.com.forum_hub.domain.topico.Topico;
-import br.com.forum_hub.infra.exception.RegraDeNegocioException;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;

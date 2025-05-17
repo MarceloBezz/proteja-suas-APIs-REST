@@ -1,9 +1,6 @@
 package br.com.forum_hub.domain.topico;
 
-import br.com.forum_hub.domain.resposta.DadosListagemResposta;
-
 import java.time.LocalDateTime;
-import java.util.List;
 
 public record DadosListagemTopico(
         Long id,
