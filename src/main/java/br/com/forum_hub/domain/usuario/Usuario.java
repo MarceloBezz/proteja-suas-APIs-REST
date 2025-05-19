@@ -8,7 +8,9 @@ import jakarta.persistence.Table;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
+import java.util.UUID;
 
 @Entity
 @Table(name = "usuarios")
@@ -23,6 +25,8 @@ public class Usuario implements UserDetails {
     private String senha;
     private String biografia;
     private String miniBiografia;
+    private String refreshToken;
+    private LocalDateTime expiracaoRefreshToken;
 
     public Usuario(String nomeCompleto, String nomeUsuario, String email, String senha, String biografia,
             String miniBiografia) {
@@ -71,5 +75,15 @@ public class Usuario implements UserDetails {
 
     public Long getId() {
         return id;
+    }
+
+    public boolean isRefreshTokenExpirado() {
+        return expiracaoRefreshToken.isBefore(LocalDateTime.now());
+    }
+
+    public String novoRefreshToken() {
+        this.refreshToken = UUID.randomUUID().toString();
+        this.expiracaoRefreshToken = LocalDateTime.now().plusMinutes(120);
+        return refreshToken;
     }
 }

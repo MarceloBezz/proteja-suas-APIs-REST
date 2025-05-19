@@ -33,8 +33,10 @@ public class AutenticacaoController {
         var authenticationToken = new UsernamePasswordAuthenticationToken(dados.email(), dados.senha());
         var authentication = authenticationManager.authenticate(authenticationToken); 
 
-        String tokenAcesso = tokenService.gerarToken((Usuario) authentication.getPrincipal());
-        String refreshToken = tokenService.gerarRefreshToken((Usuario) authentication.getPrincipal());
+        var usuario = (Usuario) authentication.getPrincipal();
+        String tokenAcesso = tokenService.gerarToken(usuario);
+        String refreshToken = usuario.novoRefreshToken();
+        usuarioRepository.save(usuario);
         
         return ResponseEntity.ok(new DadosToken(tokenAcesso, refreshToken));
     }
@@ -46,7 +48,7 @@ public class AutenticacaoController {
         var usuario = usuarioRepository.findById(idUsuario).orElseThrow();
 
         String tokenAcesso = tokenService.gerarToken(usuario);
-        String tokenAtualizacao = tokenService.gerarRefreshToken(usuario);
+        String tokenAtualizacao = usuario.novoRefreshToken();
         
         return ResponseEntity.ok(new DadosToken(tokenAcesso, tokenAtualizacao));
     }
