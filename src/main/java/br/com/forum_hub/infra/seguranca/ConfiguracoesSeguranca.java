@@ -10,16 +10,28 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class ConfiguracoesSeguranca {
 
+    private final FiltroTokenAcesso filtroTokenAcesso;
+
+    public ConfiguracoesSeguranca(FiltroTokenAcesso filtroTokenAcesso) {
+        this.filtroTokenAcesso = filtroTokenAcesso;
+    }
+
     @Bean
     public SecurityFilterChain filtroSeguranca(HttpSecurity http) throws Exception {
         return http
+                .authorizeHttpRequests(req -> {
+                    req.requestMatchers("/login", "/atualizar-token").permitAll();
+                    req.anyRequest().authenticated();
+                })
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .csrf(csrf -> csrf.disable())
+                .addFilterBefore(filtroTokenAcesso, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
 
@@ -29,7 +41,8 @@ public class ConfiguracoesSeguranca {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+            throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 }
