@@ -8,6 +8,8 @@ import jakarta.persistence.Table;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import br.com.forum_hub.infra.exception.RegraDeNegocioException;
+
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.UUID;
@@ -27,6 +29,9 @@ public class Usuario implements UserDetails {
     private String miniBiografia;
     private String refreshToken;
     private LocalDateTime expiracaoRefreshToken;
+    private boolean verificado;
+    private String token;
+    private LocalDateTime expiracaoToken;
 
     public Usuario(String nomeCompleto, String nomeUsuario, String email, String senha, String biografia,
             String miniBiografia) {
@@ -49,11 +54,19 @@ public class Usuario implements UserDetails {
         this.senha = senhaCriptografada;
         this.biografia = dados.biografia();
         this.miniBiografia = dados.miniBiografia();
+        this.verificado = false;
+        this.token = UUID.randomUUID().toString();
+        this.expiracaoToken = LocalDateTime.now().plusMinutes(30);
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return null;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return verificado;
     }
 
     @Override
@@ -94,5 +107,23 @@ public class Usuario implements UserDetails {
         this.refreshToken = UUID.randomUUID().toString();
         this.expiracaoRefreshToken = LocalDateTime.now().plusMinutes(120);
         return refreshToken;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public LocalDateTime getExpiracaoToken() {
+        return expiracaoToken;
+    }
+
+    public void verificar() {
+        if (!expiracaoToken.isBefore(LocalDateTime.now())) {
+            this.verificado = true;
+            this.token = null;
+            this.expiracaoToken = null;
+        } else {
+            throw new RegraDeNegocioException("Token expirado!");
+        }
     }
 }

@@ -12,11 +12,17 @@ import br.com.forum_hub.domain.usuario.DadosListagemUsuario;
 import br.com.forum_hub.domain.usuario.Usuario;
 import br.com.forum_hub.domain.usuario.UsuarioService;
 import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RestController
 public class UsuarioController {
 
-    private UsuarioService service;
+    private final UsuarioService service;
+
+    public UsuarioController(UsuarioService service) {
+        this.service = service;
+    }
 
     @SuppressWarnings("rawtypes")
     @PostMapping("/registrar")
@@ -30,4 +36,15 @@ public class UsuarioController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @GetMapping("/verificar-conta")
+    public ResponseEntity<String> verificarEmail(@RequestParam String codigo) {
+        try {
+            service.verificarEmail(codigo);
+            return ResponseEntity.ok("Conta verificada com sucesso!");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
 }
