@@ -32,6 +32,7 @@ public class Usuario implements UserDetails {
     private boolean verificado;
     private String token;
     private LocalDateTime expiracaoToken;
+    private boolean ativo;
 
     public Usuario(String nomeCompleto, String nomeUsuario, String email, String senha, String biografia,
             String miniBiografia) {
@@ -41,6 +42,7 @@ public class Usuario implements UserDetails {
         this.senha = senha;
         this.biografia = biografia;
         this.miniBiografia = miniBiografia;
+        this.ativo = true;
     }
 
     @SuppressWarnings("unused")
@@ -57,6 +59,7 @@ public class Usuario implements UserDetails {
         this.verificado = false;
         this.token = UUID.randomUUID().toString();
         this.expiracaoToken = LocalDateTime.now().plusMinutes(30);
+        this.ativo = true;
     }
 
     @Override
@@ -66,7 +69,7 @@ public class Usuario implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return verificado;
+        return verificado && ativo;
     }
 
     @Override
@@ -125,5 +128,31 @@ public class Usuario implements UserDetails {
         } else {
             throw new RegraDeNegocioException("Token expirado!");
         }
+    }
+
+    public void atualizar(DadosAtualizacaoUsuario dados) {
+        if (dados.nomeCompleto() != null && dados.nomeCompleto() != "") {
+            this.nomeCompleto = dados.nomeCompleto();
+        }
+
+        if (dados.nomeUsuario() != null && dados.nomeUsuario() != "") {
+            this.nomeUsuario = dados.nomeUsuario();
+        }
+
+        if (dados.miniBiografia() != null && dados.miniBiografia() != "") {
+            this.miniBiografia = dados.miniBiografia();
+        }
+
+        if (dados.biografia() != null && dados.biografia() != "") {
+            this.biografia = dados.biografia();
+        }
+    }
+
+    public void atualizarSenha(String senhaCriptografada) {
+        this.senha = senhaCriptografada;
+    }
+
+    public void desativarConta() {
+        this.ativo = false;
     }
 }

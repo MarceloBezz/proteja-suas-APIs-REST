@@ -53,4 +53,39 @@ public class UsuarioService implements UserDetailsService {
         usuario.verificar();
     }
 
+    public DadosListagemUsuario pegarUsuario(String nomeUsuario) {
+        var usuario = usuarioRepository.findByNomeUsuario(nomeUsuario)
+                .orElseThrow(() -> new RegraDeNegocioException("Usuário não encontrado!"));
+        return new DadosListagemUsuario(usuario);
+    }
+
+    @Transactional
+    public DadosListagemUsuario atualizar(DadosAtualizacaoUsuario dados, String nomeUsuario) {
+        var usuario = usuarioRepository.findByNomeUsuario(nomeUsuario)
+                .orElseThrow(() -> new RegraDeNegocioException("Usuário não encontrado!"));
+        usuario.atualizar(dados);
+        return new DadosListagemUsuario(usuario);
+    }
+
+    public void atualizarSenha(DadosAtualizacaoSenha dados, Usuario usuario) {
+        var senhasIguais = encoder.matches(dados.senhaAntiga(),usuario.getPassword());
+
+        if (!senhasIguais) {
+            throw new RegraDeNegocioException("Senhas incorreta!");
+        }
+        
+        if (!dados.novaSenha().equals(dados.confirmacaoNovaSenha())) {
+            throw new RegraDeNegocioException("Senhas não são iguais!");
+        }
+
+        var senhaCriptografada = encoder.encode(dados.novaSenha());
+        usuario.atualizarSenha(senhaCriptografada);
+        usuarioRepository.save(usuario);
+    }
+
+    public void desativarConta(Usuario usuario) {
+        usuario.desativarConta();
+        usuarioRepository.save(usuario);
+    }
+
 }
