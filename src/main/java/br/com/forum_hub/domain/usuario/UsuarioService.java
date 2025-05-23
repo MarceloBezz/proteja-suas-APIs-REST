@@ -8,6 +8,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import br.com.forum_hub.domain.perfil.DadosPerfil;
+import br.com.forum_hub.domain.perfil.PerfilNome;
+import br.com.forum_hub.domain.perfil.PerfilRepository;
 import br.com.forum_hub.infra.email.EmailService;
 import br.com.forum_hub.infra.exception.RegraDeNegocioException;
 import jakarta.transaction.Transactional;
@@ -18,11 +21,14 @@ public class UsuarioService implements UserDetailsService {
     private final UsuarioRepository usuarioRepository;
     private final PasswordEncoder encoder;
     private final EmailService emailService;
+    private final PerfilRepository perfilRepository;
 
-    public UsuarioService(UsuarioRepository usuarioRepository, PasswordEncoder encoder, EmailService emailService) {
+    public UsuarioService(UsuarioRepository usuarioRepository, PasswordEncoder encoder, EmailService emailService,
+            PerfilRepository perfilRepository) {
         this.usuarioRepository = usuarioRepository;
         this.encoder = encoder;
         this.emailService = emailService;
+        this.perfilRepository = perfilRepository;
     }
 
     @Override
@@ -41,7 +47,9 @@ public class UsuarioService implements UserDetailsService {
         }
 
         var senhaCriptografada = encoder.encode(dados.senha());
-        var usuario = new Usuario(dados, senhaCriptografada);
+        var perfil = perfilRepository.findByNome(PerfilNome.ESTUDANTE);
+
+        var usuario = new Usuario(dados, senhaCriptografada, perfil);
 
         emailService.enviarEmailVerificacao(usuario);
         return usuarioRepository.save(usuario);
@@ -60,20 +68,19 @@ public class UsuarioService implements UserDetailsService {
     }
 
     @Transactional
-    public DadosListagemUsuario atualizar(DadosAtualizacaoUsuario dados, String nomeUsuario) {
-        var usuario = usuarioRepository.findByNomeUsuario(nomeUsuario)
-                .orElseThrow(() -> new RegraDeNegocioException("Usuário não encontrado!"));
+    public DadosListagemUsuario atualizar(DadosAtualizacaoUsuario dados, Usuario usuario) {
         usuario.atualizar(dados);
+        usuarioRepository.save(usuario);
         return new DadosListagemUsuario(usuario);
     }
 
     public void atualizarSenha(DadosAtualizacaoSenha dados, Usuario usuario) {
-        var senhasIguais = encoder.matches(dados.senhaAntiga(),usuario.getPassword());
+        var senhasIguais = encoder.matches(dados.senhaAntiga(), usuario.getPassword());
 
         if (!senhasIguais) {
             throw new RegraDeNegocioException("Senhas incorreta!");
         }
-        
+
         if (!dados.novaSenha().equals(dados.confirmacaoNovaSenha())) {
             throw new RegraDeNegocioException("Senhas não são iguais!");
         }
@@ -86,6 +93,24 @@ public class UsuarioService implements UserDetailsService {
     public void desativarConta(Usuario usuario) {
         usuario.desativarConta();
         usuarioRepository.save(usuario);
+    }
+
+    @Transactional
+    public Usuario adicionarPerfil(Long id, DadosPerfil dados) {
+        var usuario = usuarioRepository.findById(id).orElseThrow();
+        var perfil = perfilRepository.findByNome(dados.perfilNome());
+
+        usuario.adicionarPerfil(perfil);
+        return usuario;
+    }
+
+    @Transactional
+    public Usuario removerPerfil(Long id, DadosPerfil dados) {
+        var usuario = usuarioRepository.findById(id).orElseThrow();
+        var perfil = perfilRepository.findByNome(dados.perfilNome());
+
+        usuario.removerPerfil(perfil);
+        return usuario;
     }
 
 }

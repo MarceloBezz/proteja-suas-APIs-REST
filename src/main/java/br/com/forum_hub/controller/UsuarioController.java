@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import br.com.forum_hub.domain.perfil.DadosPerfil;
 import br.com.forum_hub.domain.usuario.DadosAtualizacaoSenha;
 import br.com.forum_hub.domain.usuario.DadosAtualizacaoUsuario;
 import br.com.forum_hub.domain.usuario.DadosCadastroUsuario;
@@ -21,7 +22,6 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PutMapping;
-
 
 @RestController
 public class UsuarioController {
@@ -67,10 +67,11 @@ public class UsuarioController {
     }
 
     @SuppressWarnings("rawtypes")
-    @PutMapping("/{nomeUsuario}")
-    public ResponseEntity atualizarUsuario(@PathVariable String nomeUsuario, @RequestBody @Valid DadosAtualizacaoUsuario dados) {
+    @PutMapping("/editar-perfil")
+    public ResponseEntity atualizarUsuario(@AuthenticationPrincipal Usuario usuario,
+            @RequestBody @Valid DadosAtualizacaoUsuario dados) {
         try {
-            var usuarioAtualizado = service.atualizar(dados, nomeUsuario);
+            var usuarioAtualizado = service.atualizar(dados, usuario);
             return ResponseEntity.ok(usuarioAtualizado);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -80,7 +81,7 @@ public class UsuarioController {
     @SuppressWarnings("rawtypes")
     @PatchMapping("/alterar-senha")
     public ResponseEntity atualizarUsuario(@RequestBody @Valid DadosAtualizacaoSenha dados,
-    @AuthenticationPrincipal Usuario usuario) {
+            @AuthenticationPrincipal Usuario usuario) {
         try {
             service.atualizarSenha(dados, usuario);
             return ResponseEntity.ok("Senha atualizada com sucesso!");
@@ -99,4 +100,25 @@ public class UsuarioController {
         }
     }
 
+    @SuppressWarnings("rawtypes")
+    @PatchMapping("/adicionar-perfil/{id}")
+    public ResponseEntity adicionarPerfil(@RequestBody @Valid DadosPerfil dados, @PathVariable Long id) {
+        try {
+            var usuarioAtualizado = service.adicionarPerfil(id, dados);
+            return ResponseEntity.ok(new DadosListagemUsuario(usuarioAtualizado));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @SuppressWarnings("rawtypes")
+    @PatchMapping("/remover-perfil/{id}")
+    public ResponseEntity removerPerfil(@RequestBody @Valid DadosPerfil dados, @PathVariable Long id) {
+        try {
+            var usuarioAtualizado = service.removerPerfil(id, dados);
+            return ResponseEntity.ok(new DadosListagemUsuario(usuarioAtualizado));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }
