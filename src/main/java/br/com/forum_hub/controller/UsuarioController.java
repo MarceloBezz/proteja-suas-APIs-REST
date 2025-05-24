@@ -90,13 +90,23 @@ public class UsuarioController {
         }
     }
 
-    @DeleteMapping("/desativar")
-    public String desativarConta(@AuthenticationPrincipal Usuario usuario) {
+    @DeleteMapping("/desativar/{id}")
+    public ResponseEntity<String> desativarConta(@AuthenticationPrincipal Usuario logado, @PathVariable Long id) {
         try {
-            service.desativarConta(usuario);
-            return "Conta desativada com sucesso!";
+            service.desativarConta(id, logado);
+            return ResponseEntity.ok("Conta desativada com sucesso!");
         } catch (Exception e) {
-            return "Erro ao desativar conta!";
+            return ResponseEntity.badRequest().body("Erro ao desativar conta!");
+        }
+    }
+
+    @PatchMapping("/reativar/{id}")
+    public ResponseEntity<String> reativarConta(@PathVariable Long id) {
+        try {
+            service.reativarConta(id);
+            return ResponseEntity.ok("Conta reativada com sucesso!");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Erro ao reativar conta!");
         }
     }
 

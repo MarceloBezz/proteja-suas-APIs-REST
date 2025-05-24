@@ -39,20 +39,20 @@ public class RespostaController {
     }
 
     @PutMapping
-    public ResponseEntity<DadosListagemResposta> atualizar(@RequestBody @Valid DadosAtualizacaoResposta dados) {
-        var resposta = service.atualizar(dados);
+    public ResponseEntity<DadosListagemResposta> atualizar(@RequestBody @Valid DadosAtualizacaoResposta dados, Usuario logado) {
+        var resposta = service.atualizar(dados, logado);
         return ResponseEntity.ok(new DadosListagemResposta(resposta));
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<DadosListagemResposta> marcarComoSolucao(@PathVariable Long id) {
-        var resposta = service.marcarComoSolucao(id);
+    public ResponseEntity<DadosListagemResposta> marcarComoSolucao(@PathVariable Long id, @AuthenticationPrincipal Usuario logado) {
+        var resposta = service.marcarComoSolucao(id, logado);
         return ResponseEntity.ok(new DadosListagemResposta(resposta));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> excluir(@PathVariable Long id) {
-        service.excluir(id);
+    public ResponseEntity<Void> excluir(@PathVariable Long id, Usuario logado) {
+        service.excluir(id, logado);
         return ResponseEntity.noContent().build();
     }
 }

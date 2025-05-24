@@ -13,6 +13,7 @@ import br.com.forum_hub.domain.perfil.PerfilNome;
 import br.com.forum_hub.domain.perfil.PerfilRepository;
 import br.com.forum_hub.infra.email.EmailService;
 import br.com.forum_hub.infra.exception.RegraDeNegocioException;
+import br.com.forum_hub.infra.seguranca.HierarquiaService;
 import jakarta.transaction.Transactional;
 
 @Service
@@ -22,13 +23,15 @@ public class UsuarioService implements UserDetailsService {
     private final PasswordEncoder encoder;
     private final EmailService emailService;
     private final PerfilRepository perfilRepository;
+    private final HierarquiaService hierarquiaService;
 
     public UsuarioService(UsuarioRepository usuarioRepository, PasswordEncoder encoder, EmailService emailService,
-            PerfilRepository perfilRepository) {
+            PerfilRepository perfilRepository, HierarquiaService hierarquiaService) {
         this.usuarioRepository = usuarioRepository;
         this.encoder = encoder;
         this.emailService = emailService;
         this.perfilRepository = perfilRepository;
+        this.hierarquiaService = hierarquiaService;
     }
 
     @Override
@@ -90,7 +93,15 @@ public class UsuarioService implements UserDetailsService {
         usuarioRepository.save(usuario);
     }
 
-    public void desativarConta(Usuario usuario) {
+    public void desativarConta(Long id, Usuario logado) {
+        var usuario = usuarioRepository.findById(id).orElseThrow();
+
+        if(hierarquiaService.usuarioNaoTemPermissoes(logado, usuario, "ROLE_ADMIN"))
+            throw new RegraDeNegocioException("Você não pode realizar essa ação!");
+
+        if (!usuario.isEnabled())
+            throw new RegraDeNegocioException("O usuário já está inativo!");
+
         usuario.desativarConta();
         usuarioRepository.save(usuario);
     }
@@ -111,6 +122,16 @@ public class UsuarioService implements UserDetailsService {
 
         usuario.removerPerfil(perfil);
         return usuario;
+    }
+
+    @Transactional
+    public void reativarConta(Long id) {
+        var usuario = usuarioRepository.findById(id).orElseThrow();
+
+        if(usuario.isEnabled())
+            throw new RegraDeNegocioException("O usuário já está ativo!");
+
+        usuario.reativarPerfil();
     }
 
 }
