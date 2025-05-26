@@ -41,7 +41,7 @@ public class TratadorDeErros {
     public ResponseEntity<String> tratarErro401(AuthenticationException ex) {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
     }
-
+    
     @ExceptionHandler(RegraDeNegocioException.class)
     public ResponseEntity<String> tratarErroRegraDeNegocio(RegraDeNegocioException ex) {
         return ResponseEntity.badRequest().body(ex.getMessage());

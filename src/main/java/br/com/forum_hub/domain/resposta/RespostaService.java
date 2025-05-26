@@ -7,6 +7,7 @@ import br.com.forum_hub.infra.exception.RegraDeNegocioException;
 import br.com.forum_hub.infra.seguranca.HierarquiaService;
 import jakarta.transaction.Transactional;
 
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -62,7 +63,7 @@ public class RespostaService {
         var topico = resposta.getTopico();
 
         if(hierarquiaService.usuarioNaoTemPermissoes(logado, topico.getAutor(), "ROLE_INSTRUTOR"))
-            throw new RegraDeNegocioException("Você não pode marcar essa resposta como solução!");
+            throw new AccessDeniedException("Você não pode marcar essa resposta como solução!");
 
         if(topico.getStatus() == Status.RESOLVIDO)
             throw new RegraDeNegocioException("O tópico já foi solucionado! Você não pode marcar mais de uma resposta como solução.");
