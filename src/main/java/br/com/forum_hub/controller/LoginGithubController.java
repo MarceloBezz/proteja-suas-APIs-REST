@@ -28,9 +28,15 @@ public class LoginGithubController {
     public ResponseEntity<Void> redirecionarGithub() {
         //url
         var headers = new HttpHeaders();
-        headers.setLocation(URI.create( loginGithubService.gerarUrl()));
+        headers.setLocation(URI.create(loginGithubService.gerarUrl()));
 
         return new ResponseEntity<>(headers, HttpStatus.FOUND);
+    }
+
+    @GetMapping("autorizado")
+    public ResponseEntity<String> getMethodName(@RequestParam String code) {
+        var token = loginGithubService.obterToken(code);
+        return ResponseEntity.ok(token);
     }
     
 }
