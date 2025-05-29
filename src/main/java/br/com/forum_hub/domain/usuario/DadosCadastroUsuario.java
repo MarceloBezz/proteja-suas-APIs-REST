@@ -11,4 +11,8 @@ public record DadosCadastroUsuario(
         String biografia
 
 ) {
+
+    public DadosCadastroUsuario(String nomeCompleto2, String nomeUsuario2, String email2, String senha2) {
+        this(email2, senha2, nomeCompleto2, nomeUsuario2, null,null);
+    }
 }

@@ -49,12 +49,9 @@ public class UsuarioService implements UserDetailsService {
             throw new RegraDeNegocioException("Já existe uma conta cadastrada nesse email ou nome de usuário!");
         }
 
-        var senhaCriptografada = encoder.encode(dados.senha());
-        var perfil = perfilRepository.findByNome(PerfilNome.ESTUDANTE);
-
-        var usuario = new Usuario(dados, senhaCriptografada, perfil);
-
+        var usuario = criarUsuario(dados, false);
         emailService.enviarEmailVerificacao(usuario);
+        
         return usuarioRepository.save(usuario);
     }
 
@@ -96,7 +93,7 @@ public class UsuarioService implements UserDetailsService {
     public void desativarConta(Long id, Usuario logado) {
         var usuario = usuarioRepository.findById(id).orElseThrow();
 
-        if(hierarquiaService.usuarioNaoTemPermissoes(logado, usuario, "ROLE_ADMIN"))
+        if (hierarquiaService.usuarioNaoTemPermissoes(logado, usuario, "ROLE_ADMIN"))
             throw new RegraDeNegocioException("Você não pode realizar essa ação!");
 
         if (!usuario.isEnabled())
@@ -128,10 +125,25 @@ public class UsuarioService implements UserDetailsService {
     public void reativarConta(Long id) {
         var usuario = usuarioRepository.findById(id).orElseThrow();
 
-        if(usuario.isEnabled())
+        if (usuario.isEnabled())
             throw new RegraDeNegocioException("O usuário já está ativo!");
 
         usuario.reativarPerfil();
+    }
+
+    @Transactional
+    public Usuario cadastrarVerificado(DadosCadastroUsuario dadosUsuario) {
+        var usuario = criarUsuario(dadosUsuario, true);
+        
+        return usuarioRepository.save(usuario);
+    }
+
+    private Usuario criarUsuario(DadosCadastroUsuario dados, Boolean verificado) {
+        var senhaCriptografada = encoder.encode(dados.senha());
+
+        var perfil = perfilRepository.findByNome(PerfilNome.ESTUDANTE);
+
+        return new Usuario(dados, senhaCriptografada, perfil, verificado);
     }
 
 }

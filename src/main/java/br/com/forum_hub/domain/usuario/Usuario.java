@@ -78,6 +78,25 @@ public class Usuario implements UserDetails {
         this.perfis.add(perfil);
     }
 
+    public Usuario(DadosCadastroUsuario dados, String senhaCriptografada, Perfil perfil, Boolean verificado) {
+        this.nomeCompleto = dados.nomeCompleto();
+        this.email = dados.email();
+        this.senha = senhaCriptografada;
+        this.nomeUsuario = dados.nomeUsuario();
+        this.biografia = dados.biografia();
+        this.miniBiografia = dados.miniBiografia();
+        if (verificado) {
+            aprovarUsuario();
+        } else {
+            this.verificado = false;
+            this.token = UUID.randomUUID().toString();
+            this.expiracaoToken = LocalDateTime.now().plusMinutes(30);
+            this.ativo = false;
+        }
+
+        this.perfis.add(perfil);
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return perfis;
@@ -137,13 +156,11 @@ public class Usuario implements UserDetails {
     }
 
     public void verificar() {
-        if (!expiracaoToken.isBefore(LocalDateTime.now())) {
-            this.verificado = true;
-            this.token = null;
-            this.expiracaoToken = null;
-        } else {
+        if (expiracaoToken.isBefore(LocalDateTime.now())) {
             throw new RegraDeNegocioException("Token expirado!");
         }
+
+        aprovarUsuario();
     }
 
     public void atualizar(DadosAtualizacaoUsuario dados) {
@@ -182,5 +199,12 @@ public class Usuario implements UserDetails {
 
     public void reativarPerfil() {
         this.ativo = true;
+    }
+
+    private void aprovarUsuario() {
+        this.verificado = true;
+        this.ativo = true;
+        this.token = null;
+        this.expiracaoToken = null;
     }
 }

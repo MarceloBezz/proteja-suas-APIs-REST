@@ -30,7 +30,7 @@ public class ConfiguracoesSeguranca {
         return http
                 .authorizeHttpRequests(req -> {
                     req.requestMatchers("/login/**", "/atualizar-token", "/registrar",
-                    "/verificar-conta").permitAll();
+                    "/verificar-conta", "/registro/github/**").permitAll();
 
                     req.requestMatchers(HttpMethod.GET, "/cursos").permitAll();
 
